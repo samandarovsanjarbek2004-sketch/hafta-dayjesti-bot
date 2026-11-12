@@ -1,0 +1,29 @@
+name: Hafta dayjesti
+
+on:
+  schedule:
+    - cron: "17 */2 * * *"   # har 2 soatda
+  workflow_dispatch:          # qo'lda ishga tushirish tugmasi
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Yangi videolarni tekshirish
+        run: python bot.py
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+
+      - name: Yuborilganlar ro'yxatini saqlash
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add sent.txt
+          git diff --cached --quiet || git commit -m "sent.txt yangilandi"
+          git push
