@@ -1,0 +1,45 @@
+name: Clancy audio
+
+on:
+  schedule:
+    - cron: "47 */3 * * *"   # har 3 soatda
+  workflow_dispatch:          # qo'lda ishga tushirish tugmasi
+
+permissions:
+  contents: write
+
+jobs:
+  audio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: denoland/setup-deno@v2   # yt-dlp YouTube uchun JavaScript dvigateli talab qiladi
+
+      - name: Kerakli dasturlarni o'rnatish
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip install -U "yt-dlp[default]" requests
+
+      - name: Yangi videoni audio qilib yuborish
+        run: python clancy.py
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+
+      - name: Yuborilganlar ro'yxatini saqlash
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          if [ -f clancy_sent.txt ]; then
+            git add clancy_sent.txt
+            git diff --cached --quiet || git commit -m "clancy_sent.txt yangilandi"
+            git pull --rebase
+            git push
+          fi
