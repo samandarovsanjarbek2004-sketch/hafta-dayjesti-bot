@@ -64,6 +64,7 @@ def main():
     for _, video_id, title in sorted(new_videos):  # eskisidan yangisiga
         send_telegram(token, chat_id, f"📺 {title}\nhttps://youtu.be/{video_id}")
         sent.add(video_id)
+        save_sent(sent)  # keyingisi xato bersa ham, bu yuborilgani saqlanib qolsin
         print("Yuborildi:", title)
 
     if not new_videos:
